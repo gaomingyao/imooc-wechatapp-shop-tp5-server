@@ -6,12 +6,12 @@ use think\Model;
 
 class Banner extends Model
 {
-    // public static function getBannerById($id)
-    // {
-    //   //TOD0:根据Banner ID号 获取Banner信息
-    //   Db::table("banner_item");
-    //   Db::where("banner_id","=",$id);
-    //   $result = Db::select();
-    //   return $result;
-    // }
+  protected $hidden = ['delete_time','update_time'];
+  public function items(){
+    return $this->hasMany("BannerItem","banner_id","id");
+  }
+  public static function getBannerByID($id){
+      $banner = self::with(["items","items.img"])->find($id);
+      return $banner;
+  }
 }
