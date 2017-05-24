@@ -28,4 +28,12 @@ class Product extends Controller
       $result = $result->hidden(['summary']);
       return $result;
     }
+    public function getOne($id){
+      (new IDMustBePostiveInt())->goCheck();
+      $result = ProductModel::getProductDetail($id);
+      if (!$result) {
+        throw new ProductException();
+      }
+      return $result;
+    }
 }
