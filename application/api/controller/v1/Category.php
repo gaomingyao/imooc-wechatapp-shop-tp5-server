@@ -10,7 +10,7 @@ class Category extends Controller
 {
     public function getAllCategories(){
       $categories = CategoryModel::with("img")->select();
-      if ($result->isEmpty()) {
+      if ($categories->isEmpty()) {
         throw new CategoryException();
       }
       return $categories;
