@@ -5,14 +5,12 @@ namespace app\api\validate;
 class AddressNew extends BaseValidate
 {
   protected $rule = [
-    "code" => "require|isNotEmpty",
-    "mobile" => "require|isNotEmpty",
+    "name" => "require|isNotEmpty",
+    "mobile" => "require|isMobile",
     "province" => "require|isNotEmpty",
     "city" => "require|isNotEmpty",
     "country" => "require|isNotEmpty",
-    "detatil" => "require|isNotEmpty"
+    "detail" => "require|isNotEmpty"
   ];
-  protected $message = [
-    "code" => "没有code还想获取token?"
-  ];
+  protected $message = [];
 }

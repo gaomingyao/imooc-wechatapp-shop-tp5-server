@@ -5,6 +5,7 @@ namespace app\api\service;
 use think\Request;
 use think\Cache;
 use think\Exception;
+use app\lib\exception\TokenException;
 
 class Token
 {
