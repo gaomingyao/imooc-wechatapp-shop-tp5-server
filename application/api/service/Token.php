@@ -6,6 +6,9 @@ use think\Request;
 use think\Cache;
 use think\Exception;
 use app\lib\exception\TokenException;
+use app\lib\exception\ForbiddenException;
+
+use app\lib\enum\ScopeEnum;
 
 class Token
 {
@@ -38,5 +41,31 @@ class Token
           throw new Exception(['尝试获取的Token变量并不存在']);
         }
       }
+  }
+  //用户和CMS管理员都可以访问
+  public static function needPrimaryScope(){
+    $scope = self::getCurrentTokenVar("scope");
+    if ($scope) {
+      if ($scope >= ScopeEnum::User) {
+        return true;
+      }else{
+        throw new ForbiddenException();
+      }
+    }else{
+      throw new TokenException();
+    }
+  }
+  //只有用户可以访问
+  public static function needExclusiveScope(){
+    $scope = self::getCurrentTokenVar("scope");
+    if ($scope) {
+      if ($scope == ScopeEnum::User) {
+        return true;
+      }else{
+        throw new ForbiddenException();
+      }
+    }else{
+      throw new TokenException();
+    }
   }
 }
