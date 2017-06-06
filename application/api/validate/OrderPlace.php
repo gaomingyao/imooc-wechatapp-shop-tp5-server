@@ -25,7 +25,7 @@ class OrderPlace extends BaseValidate
       ]);
     }
     foreach ($values as $key => $value) {
-      checkProduct($value);
+      $this->checkProduct($value);
     }
     return true;
   }
@@ -36,6 +36,8 @@ class OrderPlace extends BaseValidate
       throw new ParameterException([
         "msg" => "商品列表参数错误"
       ]);
+    }else{
+      return true;
     }
   }
 }

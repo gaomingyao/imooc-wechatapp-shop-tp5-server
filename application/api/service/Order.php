@@ -3,25 +3,19 @@
 namespace app\api\service;
 
 use app\api\model\Product as ProductModel;
+use app\api\model\Order as OrderModel;
+use app\api\model\OrderProduct as OrderProductModel;
 use app\api\model\UserAddress as UserAddressModel;
-
-use Exception;
 use app\lib\exception\OrderException;
 use app\lib\exception\UserException;
 
 class Order
 {
-  //订单商品列表，也就是客户端传递过来的products参数
   protected $oProducts;
-
-  //真实的商品信息（包括库存量）
   protected $products;
-
   protected $uid;
 
   public function place($uid,$oProducts){
-    //$oProducts,$products做对比
-    //$products从数据查出来
     $this->oProducts = $oProducts;
     $this->products = $this->getProductsByOrder($oProducts);
     $this->uid = $uid;
@@ -31,38 +25,43 @@ class Order
       return $status;
     }
     //开始创建订单
-    $ordersSnap = $this->snapOrder($status);
-    // createOrder($ordersSnap);
+    $orderSnap = $this->snapOrder($status);
+    $order = $this->createOrder($orderSnap);
+    $order['pass'] = true;
+    return $order;
   }
 
-  private function createOrder($snap){
-    try {
-      $orderNo = $this->makeOrderNo();
-      $order = new \app\api\model\Order();
-      $order->user_id = $this->uid;
-      $order->order_no = $orderNo;
-      $order->total_price = $snap['orderPrice'];
-      $order->total_count = $snap['orderCount'];
-      $order->total_img = $snap['orderImg'];
-      $order->total_name = $snap['orderName'];
-      $order->total_address = $snap['orderAddress'];
-      $order->total_items = json_encode($snap['pStatus']);
-      $order->save();
-      $orderID = $order->id;
-      $create_time = $order->create_time;
-      foreach ($this->$oProducts as &$oProduct) {
-        $oProduct['order_id'] = $orderID;
+  private function createOrder($snap)
+  {
+      try {
+          $orderNo = $this->makeOrderNo();
+          $order = new OrderModel();
+          $order->user_id = $this->uid;
+          $order->order_no = $orderNo;
+          $order->total_price = $snap['orderPrice'];
+          $order->total_count = $snap['totalCount'];
+          $order->snap_img = $snap['snapImg'];
+          $order->snap_name = $snap['snapName'];
+          $order->snap_address = $snap['snapAddress'];
+          $order->snap_items = json_encode($snap['pStatus']);
+          $order->save();
+
+          $orderID = $order->id;
+          $create_time = $order->create_time;
+
+          foreach ($this->oProducts as &$p) {
+              $p['order_id'] = $orderID;
+          }
+          $orderProduct = new OrderProductModel();
+          $orderProduct->saveAll($this->oProducts);
+          return [
+              'order_no' => $orderNo,
+              'order_id' => $orderID,
+              'create_time' => $create_time
+          ];
+      } catch (Exception $ex) {
+          throw $ex;
       }
-      $orderProduct = new \app\api\model\OrderProduct();
-      $orderProduct->saveAll($this->$oProducts);
-      return [
-        "order_no" => $orderNo,
-        "order_id" => $orderID,
-        "create_time" => $create_time
-      ];
-    } catch (Exception $e) {
-        throw $e;
-    }
   }
 
   //生成订单快照
@@ -78,9 +77,9 @@ class Order
     $snap['orderPrice'] = $status['orderPrice'];
     $snap['totalCount'] = $status['totalCount'];
     $snap['pStatus'] = $status['pStatusArray'];
-    $snap['snapAddress'] => json_encode($this->getUserAddress());
-    $snap['snapName'] => $this->products[0]['name'];
-    $snap['snapImg'] => $this->products[0]['main_img_url'];
+    $snap['snapAddress'] = json_encode($this->getUserAddress());
+    $snap['snapName'] = $this->products[0]['name'];
+    $snap['snapImg'] = $this->products[0]['main_img_url'];
     if (count($this->products) > 1) {
       $snap['snapName'] = $snap['snapName']."等";
     }
@@ -103,11 +102,11 @@ class Order
     $status = [
       'pass' => true,
       'orderPrice' => 0,
-      'totalCount' = > 0,
+      'totalCount' => 0,
       'pStatusArray' => []
     ];
     foreach ($this->oProducts as $oProduct) {
-      $pStatus = getProductStatus(
+      $pStatus = $this->getProductStatus(
         $oProduct['product_id'],
         $oProduct['count'],
         $this->products
@@ -155,7 +154,7 @@ class Order
   private function getProductsByOrder($oProducts){
     $oPIDs = [];
     foreach ($oProducts as $item) {
-      array_push($oPIDs,$item);
+      array_push($oPIDs,$item['product_id']);
     }
     $products = ProductModel::all($oPIDs)
       ->visible(["id","price","stock","name","main_img_url"])
