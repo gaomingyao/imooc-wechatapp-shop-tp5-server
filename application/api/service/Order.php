@@ -33,6 +33,7 @@ class Order
 
   private function createOrder($snap)
   {
+      Db::startTrans();
       try {
           $orderNo = $this->makeOrderNo();
           $order = new OrderModel();
@@ -54,12 +55,14 @@ class Order
           }
           $orderProduct = new OrderProductModel();
           $orderProduct->saveAll($this->oProducts);
+          Db::commit();
           return [
               'order_no' => $orderNo,
               'order_id' => $orderID,
               'create_time' => $create_time
           ];
       } catch (Exception $ex) {
+          Db::rollback();
           throw $ex;
       }
   }

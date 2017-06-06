@@ -6,5 +6,5 @@ use think\Model;
 
 class Order extends BaseModel
 {
-    //
+    protected $autoWriteTimestamp = true;
 }
