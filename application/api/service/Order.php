@@ -8,6 +8,7 @@ use app\api\model\OrderProduct as OrderProductModel;
 use app\api\model\UserAddress as UserAddressModel;
 use app\lib\exception\OrderException;
 use app\lib\exception\UserException;
+use think\Db;
 
 class Order
 {
