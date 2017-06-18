@@ -48,9 +48,29 @@ class Pay
     if ($wxOrder['return_code'] != "SUCCESS" || $wxOrder['result_code'] != "SUCCESS") {
       Log::record($wxOrder,"error");
       Log::record("获取预支付订单失败","error");
+    }else{
+      $this->recordPreOrder($wxOrder);
+      $signcture = $this->sign($wxOrder);
+      return $signcture;
     }
-    $this->recordPreOrder($wxOrder);
-    return null;
+  }
+
+  private function sign($wxOrder){
+    $jsApiPayData = new \WxPayJsApiPay();
+    $jsApiPayData->SetAppid(config("wx.app_id"));
+    $jsApiPayData->SetTimeStamp((string)time());
+    $rand = md5(time() . mt_rand(0,1000));
+    $jsApiPayData->SetNonceStr($rand);
+    $jsApiPayData->SetPackage("prepay_id=".$wxOrder["prepay_id"]);
+    $jsApiPayData->SetSignType("md5");
+
+    $sign = $jsApiPayData->MakeSign();
+    $rawValues = $jsApiPayData->GetValues();
+    $rawValues['paySign'] = $sign;
+
+    unset($rawValues['appId']);
+
+    return $rawValues;
   }
 
   private function recordPreOrder($wxOrder){

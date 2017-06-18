@@ -15,6 +15,6 @@ class Pay extends BaseController
     public function getPreOrder($id=''){
       (new IDMustBePostiveInt())->goCheck();
       $pay = new PayService($id);
-      $pay->pay();
+      return $pay->pay();
     }
 }
