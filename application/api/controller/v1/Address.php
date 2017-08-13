@@ -2,7 +2,7 @@
 
 namespace app\api\controller\v1;
 
-use app\api\controller\BaseController
+use app\api\controller\BaseController;
 
 use app\api\validate\AddressNew;
 use app\api\model\User as UserModel;
