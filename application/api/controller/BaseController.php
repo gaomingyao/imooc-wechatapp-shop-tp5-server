@@ -13,6 +13,9 @@ class BaseController extends Controller
   }
   protected function checkExclusiveScope(){
     TokenService::needExclusiveScope();
-    
+  }
+  protected function checkSuperScope()
+  {
+    TokenService::needSuperScope();
   }
 }
