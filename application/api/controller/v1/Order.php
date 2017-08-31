@@ -94,4 +94,14 @@ class Order extends BaseController
       $status = $order->place($uid,$products);
       return $status;
     }
+
+
+    public function delivery($id){
+        (new IDMustBePositiveInt())->goCheck();
+        $order = new OrderService();
+        $success = $order->delivery($id);
+        if($success){
+            return new SuccessMessage();
+        }
+    }
 }
